@@ -7,6 +7,8 @@ set -e
 INSTALL_DIR="/data/VenusOS-Tailscale"
 STATE_DIR="/data/conf/tailscale"
 APP_DIR="/data/apps/available/VenusOS-Tailscale"
+SERVICE_BACKEND_DIR="$INSTALL_DIR/service/VenusOS-Tailscale-backend"
+SERVICE_CONTROL_DIR="$INSTALL_DIR/service/VenusOS-Tailscale"
 SERVICE_BACKEND="/service/VenusOS-Tailscale-backend"
 SERVICE_CONTROL="/service/VenusOS-Tailscale"
 VELIB="/opt/victronenergy/dbus-systemcalc-py/ext/velib_python"
@@ -75,19 +77,22 @@ mkdir -p "$STATE_DIR"
 # --- Daemontools services ---
 log "Installing services..."
 
-# backend
-mkdir -p "$SERVICE_BACKEND/log"
-cp "$SCRIPT_DIR/service/VenusOS-Tailscale-backend/run"     "$SERVICE_BACKEND/run"
-cp "$SCRIPT_DIR/service/VenusOS-Tailscale-backend/log/run" "$SERVICE_BACKEND/log/run"
-chmod +x "$SERVICE_BACKEND/run" "$SERVICE_BACKEND/log/run"
+# Copy service dirs into /data (persistent), then symlink into /service
+mkdir -p "$SERVICE_BACKEND_DIR/log"
+[ "$SCRIPT_DIR/service/VenusOS-Tailscale-backend" != "$SERVICE_BACKEND_DIR" ] && \
+    cp "$SCRIPT_DIR/service/VenusOS-Tailscale-backend/run"     "$SERVICE_BACKEND_DIR/run" && \
+    cp "$SCRIPT_DIR/service/VenusOS-Tailscale-backend/log/run" "$SERVICE_BACKEND_DIR/log/run"
+chmod +x "$SERVICE_BACKEND_DIR/run" "$SERVICE_BACKEND_DIR/log/run"
 mkdir -p /var/log/VenusOS-Tailscale-backend
+ln -sfn "$SERVICE_BACKEND_DIR" "$SERVICE_BACKEND"
 
-# control (daemontools dir is separate from install dir — always copy)
-mkdir -p "$SERVICE_CONTROL/log"
-cp "$SCRIPT_DIR/service/VenusOS-Tailscale/run"     "$SERVICE_CONTROL/run"
-cp "$SCRIPT_DIR/service/VenusOS-Tailscale/log/run" "$SERVICE_CONTROL/log/run"
-chmod +x "$SERVICE_CONTROL/run" "$SERVICE_CONTROL/log/run"
+mkdir -p "$SERVICE_CONTROL_DIR/log"
+[ "$SCRIPT_DIR/service/VenusOS-Tailscale" != "$SERVICE_CONTROL_DIR" ] && \
+    cp "$SCRIPT_DIR/service/VenusOS-Tailscale/run"     "$SERVICE_CONTROL_DIR/run" && \
+    cp "$SCRIPT_DIR/service/VenusOS-Tailscale/log/run" "$SERVICE_CONTROL_DIR/log/run"
+chmod +x "$SERVICE_CONTROL_DIR/run" "$SERVICE_CONTROL_DIR/log/run"
 mkdir -p /var/log/VenusOS-Tailscale
+ln -sfn "$SERVICE_CONTROL_DIR" "$SERVICE_CONTROL"
 
 # --- GUI v2 plugin ---
 COMPILER="/opt/victronenergy/gui-v2/gui-v2-plugin-compiler.py"

@@ -1,2 +1,2 @@
 #!/bin/sh
-exec svlogd -tt /var/log/VenusOS-Tailscale
+exec multilog t s99999 n8 /var/log/VenusOS-Tailscale

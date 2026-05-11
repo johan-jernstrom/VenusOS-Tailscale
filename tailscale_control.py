@@ -2,7 +2,6 @@
 
 import json
 import logging
-import os
 import subprocess
 import sys
 
@@ -22,8 +21,6 @@ logger = logging.getLogger(__name__)
 
 TAILSCALE_CMD   = '/data/VenusOS-Tailscale/tailscale'
 BACKEND_SERVICE = '/service/VenusOS-Tailscale-backend'
-BACKEND_RUN     = BACKEND_SERVICE + '/run'
-
 STATE_DISABLED   = 0
 STATE_STARTING   = 1
 STATE_LOGGED_OUT = 2
@@ -44,15 +41,6 @@ STATE_TEXTS = {
     STATE_ERROR:      'Error',
 }
 
-BACKEND_RUN_TEMPLATE = (
-    '#!/bin/sh\n'
-    'exec /data/VenusOS-Tailscale/tailscaled \\\n'
-    '  --no-logs-no-support \\\n'
-    '  --netfilter-mode={netfilter_mode} \\\n'
-    '  --statedir=/data/conf/tailscale\n'
-)
-
-
 def run_cmd(cmd, timeout=10):
     try:
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
@@ -71,15 +59,6 @@ def backend_running():
     rc, out, _ = run_cmd(['svstat', BACKEND_SERVICE], timeout=5)
     return rc == 0 and ': up ' in out
 
-
-def write_backend_run(advertise_exit_node):
-    mode = 'on' if advertise_exit_node else 'off'
-    try:
-        with open(BACKEND_RUN, 'w') as f:
-            f.write(BACKEND_RUN_TEMPLATE.format(netfilter_mode=mode))
-        os.chmod(BACKEND_RUN, 0o755)
-    except Exception as e:
-        logger.error('Failed to write backend run script: %s', e)
 
 
 class TailscaleControl:
@@ -142,7 +121,6 @@ class TailscaleControl:
         if setting == 'Enabled':
             self._tick()
         elif setting == 'AdvertiseExitNode':
-            write_backend_run(int(new_value))
             if backend_running():
                 svc('-t', BACKEND_SERVICE)
 
@@ -190,13 +168,13 @@ class TailscaleControl:
             return
 
         backend_state = status.get('BackendState', 'NoState')
-        auth_url      = status.get('AuthURL', '')
-        self_info     = status.get('Self', {})
+        auth_url      = status.get('AuthURL') or ''
+        self_info     = status.get('Self') or {}
         online        = self_info.get('Online', False)
-        ips           = self_info.get('TailscaleIPs', [])
-        hostname      = self_info.get('HostName', '')
-        key_expiry    = self_info.get('KeyExpiry', '')
-        tailnet_name  = status.get('CurrentTailnet', {}).get('Name', status.get('MagicDNSSuffix', ''))
+        ips           = self_info.get('TailscaleIPs') or []
+        hostname      = self_info.get('HostName') or ''
+        key_expiry    = self_info.get('KeyExpiry') or ''
+        tailnet_name  = (status.get('CurrentTailnet') or {}).get('Name') or status.get('MagicDNSSuffix') or ''
 
         self._dbus['/HostName']   = hostname
         self._dbus['/TailnetName'] = tailnet_name

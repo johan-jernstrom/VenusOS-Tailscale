@@ -15,8 +15,8 @@ svc -d "$SERVICE_CONTROL"  2>/dev/null || true
 svc -d "$SERVICE_BACKEND"  2>/dev/null || true
 sleep 2
 
-log "Removing service directories..."
-rm -rf "$SERVICE_CONTROL" "$SERVICE_BACKEND"
+log "Removing services..."
+rm -f "$SERVICE_CONTROL" "$SERVICE_BACKEND"
 
 log "Removing app..."
 rm -f /data/apps/enabled/VenusOS-Tailscale
