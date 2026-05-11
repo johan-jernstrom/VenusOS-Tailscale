@@ -6,7 +6,7 @@ A lightweight [Tailscale](https://tailscale.com) integration for [Venus OS](http
 - No SetupHelper dependency — one shell script installs everything
 - GUI v2 configuration page (Venus OS 3.x+) instead of patched GUI v1
 - 5-second poll interval instead of 1-second (lower CPU overhead)
-- `--netfilter-mode=off` by default (reduces kernel overhead when not using exit node)
+- `-no-logs-no-support` flag disables Tailscale telemetry
 
 ## Requirements
 
