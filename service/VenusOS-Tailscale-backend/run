@@ -1,0 +1,5 @@
+#!/bin/sh
+exec /data/VenusOS-Tailscale/tailscaled \
+  --no-logs-no-support \
+  --netfilter-mode=off \
+  --statedir=/data/conf/tailscale
