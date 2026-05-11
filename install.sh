@@ -58,7 +58,9 @@ fi
 # --- Control daemon ---
 log "Installing control daemon..."
 mkdir -p "$INSTALL_DIR"
-cp "$SCRIPT_DIR/tailscale_control.py" "$INSTALL_DIR/"
+if [ "$SCRIPT_DIR" != "$INSTALL_DIR" ]; then
+    cp "$SCRIPT_DIR/tailscale_control.py" "$INSTALL_DIR/"
+fi
 chmod +x "$INSTALL_DIR/tailscale_control.py"
 
 # --- velib_python symlink ---
@@ -80,7 +82,7 @@ cp "$SCRIPT_DIR/service/VenusOS-Tailscale-backend/log/run" "$SERVICE_BACKEND/log
 chmod +x "$SERVICE_BACKEND/run" "$SERVICE_BACKEND/log/run"
 mkdir -p /var/log/VenusOS-Tailscale-backend
 
-# control
+# control (daemontools dir is separate from install dir — always copy)
 mkdir -p "$SERVICE_CONTROL/log"
 cp "$SCRIPT_DIR/service/VenusOS-Tailscale/run"     "$SERVICE_CONTROL/run"
 cp "$SCRIPT_DIR/service/VenusOS-Tailscale/log/run" "$SERVICE_CONTROL/log/run"
@@ -92,7 +94,7 @@ COMPILER="/opt/victronenergy/gui-v2/gui-v2-plugin-compiler.py"
 if [ -f "$COMPILER" ]; then
     log "Installing GUI v2 plugin..."
     mkdir -p "$APP_DIR/gui-v2"
-    cp "$SCRIPT_DIR/gui-v2/"*.qml "$APP_DIR/gui-v2/"
+    [ "$SCRIPT_DIR/gui-v2" != "$APP_DIR/gui-v2" ] && cp "$SCRIPT_DIR/gui-v2/"*.qml "$APP_DIR/gui-v2/"
     ( cd "$APP_DIR/gui-v2" && \
       python3 "$COMPILER" --name VenusOS-Tailscale \
         --settings VenusOS-Tailscale_PageTailscale.qml ) \

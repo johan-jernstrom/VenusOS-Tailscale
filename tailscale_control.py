@@ -10,9 +10,9 @@ import dbus
 from dbus.mainloop.glib import DBusGMainLoop
 from gi.repository import GLib
 
-sys.path.insert(1, '/data/VenusOS-Tailscale')
-from velib_python.vedbus import VeDbusService
-from velib_python.settingsdevice import SettingsDevice
+sys.path.insert(1, '/data/VenusOS-Tailscale/velib_python')
+from vedbus import VeDbusService
+from settingsdevice import SettingsDevice
 
 logging.basicConfig(
     level=logging.INFO,
