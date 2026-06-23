@@ -94,6 +94,15 @@ chmod +x "$SERVICE_CONTROL_DIR/run" "$SERVICE_CONTROL_DIR/log/run"
 mkdir -p /var/log/VenusOS-Tailscale
 ln -sfn "$SERVICE_CONTROL_DIR" "$SERVICE_CONTROL"
 
+# /service is a tmpfs and is wiped on every reboot. Re-create the symlinks at
+# boot via /data/rc.local so the services survive a restart.
+RC_LOCAL="/data/rc.local"
+[ -f "$RC_LOCAL" ] || { echo '#!/bin/sh' > "$RC_LOCAL"; chmod +x "$RC_LOCAL"; }
+grep -qF "$SERVICE_BACKEND" "$RC_LOCAL" || \
+    echo "ln -sfn $SERVICE_BACKEND_DIR $SERVICE_BACKEND" >> "$RC_LOCAL"
+grep -qF "$SERVICE_CONTROL_DIR $SERVICE_CONTROL" "$RC_LOCAL" || \
+    echo "ln -sfn $SERVICE_CONTROL_DIR $SERVICE_CONTROL" >> "$RC_LOCAL"
+
 # --- GUI v2 plugin ---
 COMPILER="/opt/victronenergy/gui-v2/gui-v2-plugin-compiler.py"
 if [ -f "$COMPILER" ]; then

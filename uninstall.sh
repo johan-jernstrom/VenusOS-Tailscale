@@ -18,6 +18,12 @@ sleep 2
 log "Removing services..."
 rm -f "$SERVICE_CONTROL" "$SERVICE_BACKEND"
 
+# Drop the boot-time symlink lines added to /data/rc.local by the installer
+if [ -f /data/rc.local ]; then
+    grep -v "$INSTALL_DIR/service/" /data/rc.local > /data/rc.local.tmp || true
+    mv /data/rc.local.tmp /data/rc.local
+fi
+
 log "Removing app..."
 rm -f /data/apps/enabled/VenusOS-Tailscale
 rm -rf "$APP_DIR"
